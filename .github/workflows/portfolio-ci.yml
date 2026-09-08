@@ -1,0 +1,35 @@
+name: Portfolio checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-contracts:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install existing preprocessing dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Check publication scope
+        run: python tools/check_publication.py
+      - name: Test publication guard
+        run: python -m unittest discover -s tests -v
+      - name: Test preprocessing on synthetic rows
+        run: python -m unittest discover -s Preprocess/tests -v
+      - name: Parse Python source
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          for directory in ("Preprocess", "tools", "tests"):
+              for path in Path(directory).rglob("*.py"):
+                  ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+          PY

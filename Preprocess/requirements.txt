@@ -1,0 +1,3 @@
+# Must remain aligned with the repository-root development environment.
+numpy==1.26.4
+pandas==2.0.3
